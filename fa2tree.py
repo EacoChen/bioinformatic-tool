@@ -79,10 +79,10 @@ def runIQTree(infile, outfile, type):
 
 
 @click.command()
-@click.option("--input", type = 'str', required = True, default=os.getcwd(), help="input file path.")
-@click.option("--type", type = 'str', default='aa', help="type of fasta. aa or nt. [default = 'aa']")
-@click.option("--suffix", type = 'str', default= 'fasta', help="suffix of fasta file. [default = 'fasta']")
-@click.option("--nr", type = 'str', default='0.999', help="cd-hit nr threshold")
+@click.option("--input", type = str, required = True, default=os.getcwd(), help="input file path.")
+@click.option("--type", type = str, default='aa', help="type of fasta. aa or nt. [default = 'aa']")
+@click.option("--suffix", type = str, default= 'fasta', help="suffix of fasta file. [default = 'fasta']")
+@click.option("--nr", type = str, default='0.999', help="cd-hit nr threshold")
 
 def main(input,type,suffix,nr):
 
