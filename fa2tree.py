@@ -115,6 +115,7 @@ def main(input,type,suffix,nr):
         msg += '\n============================'
         sys.exit(msg)
     
+    print(WD, input)
     file_prefix = os.path.join(WD, os.path.basename(input).split('.')[0])
 
     std_file = f'{file_prefix}_std.{suffix}'
