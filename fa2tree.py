@@ -12,7 +12,7 @@ def runCMD(cmd):
     print(' '.join(cmd))
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
             _out,_err = proc.communicate()
-    print(_out,_err)
+    print(_out.decode('utf-8'),_err.decode('utf-8'))
 
 
 def std_infile(input,std_file):
@@ -34,39 +34,67 @@ def std_infile(input,std_file):
 
 def runCDhit(infile,outfile,threshold='0.999'):
     cd_hitpath = f'{HOME}/anaconda3/bin/cd-hit'
+
+    print('\n============================\nRunning cd-hit\n')
+
     cmd = [cd_hitpath,'-i',infile,'-o',outfile,'-c',threshold]
     runCMD(cmd)
+
+    print('\n============================\nEnd cd-hit\n')
 
 
 def runKoFam(infile,outfile):
     kofampath = f'{HOME}/anaconda3/envs/kofamscan/bin/exec_annotation'
-    cmd = ['time',kofampath,'-o',outfile,infile,'-f','detail-tsv','--report-unannotated']
+
+    print('\n============================\nRunning kofamscan\n')
+
+    cmd = ['conda', 'activate', 'kofamscan', '&&', 'time',kofampath,'-o',outfile,infile,'-f','detail-tsv','--report-unannotated']
     runCMD(cmd)
+
+    print('\n============================\nEnd kofamscan\n')
 
 
 def runSelectKoFasta(annofile,infile,outfile):
+
+    print('\n============================\nRunning select KO annotation\n')
+
     df = pd.read_csv(annofile,sep = '\t')
     df = df[df['#'] == '*'].drop_duplicates(subset='gene name')
     acc_ids = list(df['gene name'])
     records = [_ for _ in SeqIO.parse(infile,'fasta') if _.id in acc_ids]
     counts = SeqIO.write(records, outfile, 'fasta')
+
     print(f'There are {counts} sequences have been annotated.')
+    print('\n============================\nEnd select KO\n')
 
 
 def runMafft(infile, outfile):
     mafftpath = f'{HOME}/anaconda3/envs/phlan/bin/mafft'
+
+    print('\n============================\nRunning Mafft\n')
+
     cmd = [mafftpath, '--auto', infile, '>', outfile]
     runCMD(cmd)
+
+    print('\n============================\nEnd Mafft\n')
 
 
 def runTrimal(infile,outfile):
     trimalpath = f'{HOME}anaconda3/envs/phlan/bin/trimal'
+
+    print('\n============================\nRunning TrimAl\n')
+
     cmd = [trimalpath, '-automated1', '-in', infile, '-out', outfile]
     runCMD(cmd)
+
+    print('\n============================\nEnd TrimAl\n')
 
 
 def runIQTree(infile, outfile, type):
     iqtreepath = f'{HOME}/anaconda3/envs/phlan/bin/iqtree'
+
+    print('\n============================\nRunning IQtree\n')
+
     if type == 'aa':
         method = 'WAG,LG,JTT,Dayhoff'
     elif type == 'na':
@@ -76,6 +104,8 @@ def runIQTree(infile, outfile, type):
            '-mrate', 'E,I,G,I+G', '-mfreq', 'FU', '-wbtl', '-bb', 1000, 
            '-pre', outfile, '-s', infile]
     runCMD(cmd)
+
+    print('\n============================\nEnd IQtree\n')
 
 
 @click.command()
@@ -115,7 +145,6 @@ def main(input,type,suffix,nr):
         msg += '\n============================'
         sys.exit(msg)
     
-    print(WD, input)
     file_prefix = os.path.join(WD, os.path.basename(input).split('.')[0])
 
     std_file = f'{file_prefix}_std.{suffix}'
@@ -125,7 +154,7 @@ def main(input,type,suffix,nr):
     except OSError as e:
         sys.exit(e)
     
-    print('The input file has been saved to a standard fasta file in %s' % std_file)
+    print('The input file has been saved to a standard fasta file in %s\n' % std_file)
 
     nrfile = f'{file_prefix}_nr.{suffix}'
     runCDhit(std_file, nrfile, nr)
@@ -142,12 +171,14 @@ def main(input,type,suffix,nr):
     trimal_align_file = f'{file_prefix}_nr.anno.align.trimal.{suffix}'
     runTrimal(align_anno_nrfile,trimal_align_file)
 
+    print('\n============================\ntrim tree\n')
     tree_trimal = f'{file_prefix}_trim'
     if not os.path.exists(tree_trimal):
         os.makedirs(tree_trimal)
     tree_trimal_pre = os.path.join(tree_trimal, 'anno_trimal')
     runIQTree(trimal_align_file, tree_trimal_pre, type)
 
+    print('\n============================\nanno tree\n')
     tree_anno = f'{file_prefix}_anno'
     if not os.path.exists(tree_anno):
         os.makedirs(tree_anno)
