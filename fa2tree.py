@@ -103,7 +103,7 @@ def runIQTree(infile, outfile, type):
     elif type == 'na':
         method = 'GTR+R10'
     
-    cmd = f"""{iqtreepath} -nt' AUTO -m MFP -redo mset {method} \
+    cmd = f"""{iqtreepath} -nt AUTO -m MFP -redo -mset {method} \
            -mrate E,I,G,I+G -mfreq FU -wbtl -bb 1000 \
            -pre {outfile} -s {infile}"""
     runCMD(cmd)
