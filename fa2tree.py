@@ -12,8 +12,8 @@ def runCMD(cmd):
     print(cmd)
     with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
         _out,_err = proc.communicate()
-    if _err:
-        sys.exit(_err.decode('utf-8'))
+#    if _err:
+#        sys.exit(_err.decode('utf-8'))
     print(_out.decode('utf-8'))
 
 
