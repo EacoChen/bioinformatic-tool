@@ -9,11 +9,11 @@ import pandas as pd
 HOME = os.getenv('HOME')
 
 def runCMD(cmd):
-    print(' '.join(cmd))
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+    print(cmd)
+    with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
         _out,_err = proc.communicate()
     if _err:
-        sys.exit(_err)
+        sys.exit(_err.decode('utf-8'))
     print(_out.decode('utf-8'))
 
 
@@ -39,7 +39,7 @@ def runCDhit(infile,outfile,threshold='0.999'):
 
     print('\n============================  Running cd-hit  ============================\n')
 
-    cmd = [cd_hitpath,'-i',infile,'-o',outfile,'-c',threshold]
+    cmd = f'{cd_hitpath} -i {infile} -o {outfile} -c {threshold}'
     runCMD(cmd)
 
     print('\n============================  End cd-hit  ============================\n')
@@ -50,9 +50,8 @@ def runKoFam(infile,outfile):
 
     print('\n============================  Running kofamscan  ============================\n')
 
-    cmd = ['.', '$HOME/anaconda3/etc/profile.d/conda.sh', '&&',
-           'conda', 'activate', 'kofamscan', '&&',
-           'time',kofampath,'-o',outfile,infile,'-f','detail-tsv','--report-unannotated']
+    cmd = f""". $HOME/anaconda3/etc/profile.d/conda.sh && conda activate kofamscan && \
+    time {kofampath} -o {outfile} {infile} -f detail-tsv --report-unannotated"""
     runCMD(cmd)
 
     print('\n============================  End kofamscan  ============================\n')
@@ -77,7 +76,7 @@ def runMafft(infile, outfile):
 
     print('\n============================  Running Mafft  ============================\n')
 
-    cmd = [mafftpath, infile, '>', outfile]
+    cmd = f'{mafftpath} {infile} > {outfile}'
     runCMD(cmd)
 
     print('\n============================  End Mafft  ============================\n')
@@ -88,7 +87,7 @@ def runTrimal(infile,outfile):
 
     print('\n============================  Running TrimAl  ============================\n')
 
-    cmd = [trimalpath, '-automated1', '-in', infile, '-out', outfile]
+    cmd = f"{trimalpath} -automated1 -in {infile} -out {outfile}"
     runCMD(cmd)
 
     print('\n============================  End TrimAl  ============================\n')
@@ -104,9 +103,9 @@ def runIQTree(infile, outfile, type):
     elif type == 'na':
         method = 'GTR+R10'
     
-    cmd = [iqtreepath, '-nt', 'AUTO', '-m', 'MFP', '-redo', 'mset', method,
-           '-mrate', 'E,I,G,I+G', '-mfreq', 'FU', '-wbtl', '-bb', '1000', 
-           '-pre', outfile, '-s', infile]
+    cmd = f"""{iqtreepath} -nt' AUTO -m MFP -redo mset {method} \
+           -mrate E,I,G,I+G -mfreq FU -wbtl -bb 1000 \
+           -pre {outfile} -s {infile}"""
     runCMD(cmd)
 
     print('\n============================  End IQtree  ============================\n')
