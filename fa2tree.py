@@ -35,28 +35,30 @@ def std_infile(input,std_file):
 def runCDhit(infile,outfile,threshold='0.999'):
     cd_hitpath = f'{HOME}/anaconda3/bin/cd-hit'
 
-    print('\n============================\nRunning cd-hit\n')
+    print('\n============================  Running cd-hit  ============================\n')
 
     cmd = [cd_hitpath,'-i',infile,'-o',outfile,'-c',threshold]
     runCMD(cmd)
 
-    print('\n============================\nEnd cd-hit\n')
+    print('\n============================  End cd-hit  ============================\n')
 
 
 def runKoFam(infile,outfile):
     kofampath = f'{HOME}/anaconda3/envs/kofamscan/bin/exec_annotation'
 
-    print('\n============================\nRunning kofamscan\n')
+    print('\n============================  Running kofamscan  ============================\n')
 
-    cmd = ['conda', 'activate', 'kofamscan', '&&', 'time',kofampath,'-o',outfile,infile,'-f','detail-tsv','--report-unannotated']
+    cmd = ['.', '$HOME/anaconda3/etc/profile.d/conda.sh', '&&',
+           'conda', 'activate', 'kofamscan', '&&',
+           'time',kofampath,'-o',outfile,infile,'-f','detail-tsv','--report-unannotated']
     runCMD(cmd)
 
-    print('\n============================\nEnd kofamscan\n')
+    print('\n============================  End kofamscan  ============================\n')
 
 
 def runSelectKoFasta(annofile,infile,outfile):
 
-    print('\n============================\nRunning select KO annotation\n')
+    print('\n============================  Running select KO annotation  ============================\n')
 
     df = pd.read_csv(annofile,sep = '\t')
     df = df[df['#'] == '*'].drop_duplicates(subset='gene name')
@@ -65,35 +67,35 @@ def runSelectKoFasta(annofile,infile,outfile):
     counts = SeqIO.write(records, outfile, 'fasta')
 
     print(f'There are {counts} sequences have been annotated.')
-    print('\n============================\nEnd select KO\n')
+    print('\n============================  End select KO  ============================\n')
 
 
 def runMafft(infile, outfile):
     mafftpath = f'{HOME}/anaconda3/envs/phlan/bin/mafft'
 
-    print('\n============================\nRunning Mafft\n')
+    print('\n============================  Running Mafft  ============================\n')
 
     cmd = [mafftpath, '--auto', infile, '>', outfile]
     runCMD(cmd)
 
-    print('\n============================\nEnd Mafft\n')
+    print('\n============================  End Mafft  ============================\n')
 
 
 def runTrimal(infile,outfile):
     trimalpath = f'{HOME}/anaconda3/envs/phlan/bin/trimal'
 
-    print('\n============================\nRunning TrimAl\n')
+    print('\n============================  Running TrimAl  ============================\n')
 
     cmd = [trimalpath, '-automated1', '-in', infile, '-out', outfile]
     runCMD(cmd)
 
-    print('\n============================\nEnd TrimAl\n')
+    print('\n============================  End TrimAl  ============================\n')
 
 
 def runIQTree(infile, outfile, type):
     iqtreepath = f'{HOME}/anaconda3/envs/phlan/bin/iqtree'
 
-    print('\n============================\nRunning IQtree\n')
+    print('\n============================  Running IQtree  ============================\n')
 
     if type == 'aa':
         method = 'WAG,LG,JTT,Dayhoff'
@@ -105,7 +107,7 @@ def runIQTree(infile, outfile, type):
            '-pre', outfile, '-s', infile]
     runCMD(cmd)
 
-    print('\n============================\nEnd IQtree\n')
+    print('\n============================  End IQtree  ============================\n')
 
 
 @click.command()
@@ -113,8 +115,9 @@ def runIQTree(infile, outfile, type):
 @click.option("--type", type = str, default='aa', help="type of fasta. aa or nt. [default = 'aa']")
 @click.option("--suffix", type = str, default= 'fasta', help="suffix of fasta file. [default = 'fasta']")
 @click.option("--nr", type = str, default='0.999', help="cd-hit nr threshold")
+@click.option("--skip_kofam", type=bool, default=False, help="if the kofam results is less than 10, can try to skip this step.")
 
-def main(input,type,suffix,nr):
+def main(input, type, suffix, nr, skip_kofam):
 
     if os.path.isdir(input):
         WD = input
@@ -159,11 +162,15 @@ def main(input,type,suffix,nr):
     nrfile = f'{file_prefix}_nr.{suffix}'
     runCDhit(std_file, nrfile, nr)
 
-    kofamout = f'{file_prefix}_kofam_annotation.out'
-    runKoFam(nrfile, kofamout)
+    if skip_kofam == False:
+        kofamout = f'{file_prefix}_kofam_annotation.out'
+        runKoFam(nrfile, kofamout)
 
-    anno_nrfile = f'{file_prefix}_nr.anno.{suffix}'
-    runSelectKoFasta(kofamout, nrfile, anno_nrfile)
+        anno_nrfile = f'{file_prefix}_nr.anno.{suffix}'
+        runSelectKoFasta(kofamout, nrfile, anno_nrfile)
+    else:
+        anno_nrfile = nrfile
+        print("============================  KOfamscan skipped  ============================")
 
     align_anno_nrfile = f'{file_prefix}_nr.anno.align.{suffix}'
     runMafft(anno_nrfile, align_anno_nrfile)
@@ -171,14 +178,14 @@ def main(input,type,suffix,nr):
     trimal_align_file = f'{file_prefix}_nr.anno.align.trimal.{suffix}'
     runTrimal(align_anno_nrfile,trimal_align_file)
 
-    print('\n============================\ntrim tree\n')
+    print('\n============================  trim tree  ============================')
     tree_trimal = f'{file_prefix}_trim'
     if not os.path.exists(tree_trimal):
         os.makedirs(tree_trimal)
     tree_trimal_pre = os.path.join(tree_trimal, 'anno_trimal')
     runIQTree(trimal_align_file, tree_trimal_pre, type)
 
-    print('\n============================\nanno tree\n')
+    print('\n============================  anno tree  ============================')
     tree_anno = f'{file_prefix}_anno'
     if not os.path.exists(tree_anno):
         os.makedirs(tree_anno)
