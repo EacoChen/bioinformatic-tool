@@ -80,7 +80,7 @@ def runMafft(infile, outfile):
 
 
 def runTrimal(infile,outfile):
-    trimalpath = f'{HOME}anaconda3/envs/phlan/bin/trimal'
+    trimalpath = f'{HOME}/anaconda3/envs/phlan/bin/trimal'
 
     print('\n============================\nRunning TrimAl\n')
 
