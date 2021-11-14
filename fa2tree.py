@@ -11,8 +11,10 @@ HOME = os.getenv('HOME')
 def runCMD(cmd):
     print(' '.join(cmd))
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
-            _out,_err = proc.communicate()
-    print(_out.decode('utf-8'),_err.decode('utf-8'))
+        _out,_err = proc.communicate()
+    if _err:
+        sys.exit(_err)
+    print(_out.decode('utf-8'))
 
 
 def std_infile(input,std_file):
@@ -71,11 +73,11 @@ def runSelectKoFasta(annofile,infile,outfile):
 
 
 def runMafft(infile, outfile):
-    mafftpath = f'{HOME}/anaconda3/envs/phlan/bin/mafft'
+    mafftpath = f'{HOME}/anaconda3/envs/phlan/bin/einsi'
 
     print('\n============================  Running Mafft  ============================\n')
 
-    cmd = [mafftpath, '--auto', infile, '>', outfile]
+    cmd = [mafftpath, infile, '>', outfile]
     runCMD(cmd)
 
     print('\n============================  End Mafft  ============================\n')
@@ -103,7 +105,7 @@ def runIQTree(infile, outfile, type):
         method = 'GTR+R10'
     
     cmd = [iqtreepath, '-nt', 'AUTO', '-m', 'MFP', '-redo', 'mset', method,
-           '-mrate', 'E,I,G,I+G', '-mfreq', 'FU', '-wbtl', '-bb', 1000, 
+           '-mrate', 'E,I,G,I+G', '-mfreq', 'FU', '-wbtl', '-bb', '1000', 
            '-pre', outfile, '-s', infile]
     runCMD(cmd)
 
