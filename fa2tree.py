@@ -62,12 +62,16 @@ def runSelectKoFasta(annofile,infile,outfile):
     print('\n============================  Running select KO annotation  ============================\n')
 
     df = pd.read_csv(annofile,sep = '\t')
-    df = df[df['#'] == '*'].drop_duplicates(subset='gene name')
+    # df = df[df['#'] == '*'].drop_duplicates(subset='gene name')
+    df = df.drop_duplicates(subset='gene name', keep='first')
     acc_ids = list(df['gene name'])
     records = [_ for _ in SeqIO.parse(infile,'fasta') if _.id in acc_ids]
     counts = SeqIO.write(records, outfile, 'fasta')
 
     print(f'There are {counts} sequences have been annotated.')
+    
+    genes = set(list(df['"KO definition"']))
+    print(genes)
     print('\n============================  End select KO  ============================\n')
 
 
