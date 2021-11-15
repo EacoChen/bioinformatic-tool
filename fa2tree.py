@@ -157,7 +157,9 @@ def main(input, out, type, prefix, suffix, nr, skip_kofam):
     else:
         WD = os.path.dirname(os.path.abspath(input))
 
-    file_prefix = os.path.join(WD, f"{prefix}_{os.path.basename(infile).split('.')[0]}") #TODO: This can only work when input is a file
+    if not prefix:
+        prefix = os.path.basename(infile).split('.')[0]
+    file_prefix = os.path.join(WD, prefix) #TODO: This can only work when input is a file
 
     std_file = f'{file_prefix}_std.{suffix}'
 
