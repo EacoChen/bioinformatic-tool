@@ -64,6 +64,7 @@ def runSelectKoFasta(annofile,infile,outfile):
     df = pd.read_csv(annofile,sep = '\t')
     # df = df[df['#'] == '*'].drop_duplicates(subset='gene name')
     df = df.drop_duplicates(subset='gene name', keep='first')
+    df.dropna(subset=['E-value'],inplace = True)
     acc_ids = list(df['gene name'])
     records = [_ for _ in SeqIO.parse(infile,'fasta') if _.id in acc_ids]
     counts = SeqIO.write(records, outfile, 'fasta')
