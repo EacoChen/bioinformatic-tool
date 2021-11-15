@@ -113,15 +113,16 @@ def runIQTree(infile, outfile, type):
 
 @click.command()
 @click.option("--input", type = str, required = True, default=os.getcwd(), help="input file path.")
+@click.option("--out", type = str, default='', help="output file path.")
 @click.option("--type", type = str, default='aa', help="type of fasta. aa or nt. [default = 'aa']")
+@click.option("--prefix", type = str, default='', help="output prefix")
 @click.option("--suffix", type = str, default= 'fasta', help="suffix of fasta file. [default = 'fasta']")
 @click.option("--nr", type = str, default='0.999', help="cd-hit nr threshold")
 @click.option("--skip_kofam", type=bool, default=False, help="if the kofam results is less than 10, can try to skip this step.")
 
-def main(input, type, suffix, nr, skip_kofam):
+def main(input, out, type, prefix, suffix, nr, skip_kofam):
 
     if os.path.isdir(input):
-        WD = input
         inputs = glob(os.path.join(input,f'*.{suffix}'))
         if len(inputs) == 1:
             infile = inputs[0]
@@ -136,12 +137,10 @@ def main(input, type, suffix, nr, skip_kofam):
             sys.exit(msg)
     
     elif os.path.islink(input):
-        WD = os.path.dirname(input)
-        infile = os.readlink(input)
+        infile = os.readlink(os.path.abspath(input))
 
     elif os.path.isfile(input):
-        WD = os.path.dirname(input)
-        infile = input
+        infile = os.path.abspath(input)
     
     else:
         msg = '\n============================'
@@ -149,7 +148,16 @@ def main(input, type, suffix, nr, skip_kofam):
         msg += '\n============================'
         sys.exit(msg)
     
-    file_prefix = os.path.join(WD, os.path.basename(input).split('.')[0])
+    if out:
+        if os.path.exists(out):
+            WD = os.path.abspath(out)
+        else:
+            os.makedirs(out)
+            WD = os.path.abspath(out)
+    else:
+        WD = os.path.dirname(os.path.abspath(input))
+
+    file_prefix = os.path.join(WD, f"{prefix}_{os.path.basename(infile).split('.')[0]}") #TODO: This can only work when input is a file
 
     std_file = f'{file_prefix}_std.{suffix}'
 
