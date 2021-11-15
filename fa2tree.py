@@ -71,7 +71,7 @@ def runSelectKoFasta(annofile,infile,outfile):
 
     print(f'There are {counts} sequences have been annotated.')
     
-    genes = set(list(df['"KO definition"']))
+    genes = set(list(df['KO definition']))
     print(genes)
     print('\n============================  End select KO  ============================\n')
 
