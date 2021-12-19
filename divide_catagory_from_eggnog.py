@@ -32,7 +32,7 @@ def main():
         else:
             cat = list(df.iat[i,-1])
 
-        if cat > 1:
+        if len(cat) > 1:
             _tmp = {}
             for j in range(df.shape[1]):
                 if j ==0:
