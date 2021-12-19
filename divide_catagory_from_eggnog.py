@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import pandas as pd
 import argparse
+import re
+from pandas.core.arrays import categorical
 from tqdm import tqdm
 
 
@@ -23,19 +25,24 @@ def main():
     df = pd.read_csv(infile,sep='\t')
 
     data = []
-
+    
     for x,i in tqdm(enumerate(df.index)):
-        if len(df.iat[i,df.shape[1]-1]) > 1:
+        if re.search(r'\d',df.iat[0,-1]):
+            cat = df.iat[i,-1].split(',')
+        else:
+            cat = list(df.iat[i,-1])
+
+        if cat > 1:
             _tmp = {}
             for j in range(df.shape[1]):
                 if j ==0:
                     _tmp[df.columns[j]] = df.iat[i,j]
                 elif j == df.shape[1]-1:
-                    for y in range(len(df.iat[i,j])):
-                        _tmp[df.columns[j]] = df.iat[i,j][y]
+                    for y in range(len(cat)):
+                        _tmp[df.columns[j]] = cat[y]
                         data.append(_tmp)
                 else:
-                    _tmp[df.columns[j]] = df.iat[i,j]/len(df.iat[i,df.shape[1]-1])
+                    _tmp[df.columns[j]] = df.iat[i,j]/len(df.iat[i,-1])
         else:
             _tmp = {}
             for j in range(df.shape[1]):
@@ -45,7 +52,7 @@ def main():
     data_dict = {i:data[i] for i in range(len(data))}
     new_df = pd.DataFrame.from_dict(data_dict,orient='index',columns=df.columns)
 
-    new_df = new_df.groupby[df.columns[-1]].sum()
+    new_df = new_df.groupby(df.columns[-1]).sum()
     new_df.to_csv(f'{output}.count',sep='\t')
 
     modi_df = pd.DataFrame()
