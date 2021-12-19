@@ -9,7 +9,7 @@ def parseArgs():
 
     parser.add_argument('-i', '--input', type = str, required=True, help = 'eggnog的注释文件，最后一些是注释的分类')
     parser.add_argument('-o', '--output', type = str, required=False, help = '输出文件')
-    parser.add_argument('-s', '--stdnum', type = int, required=False, default= 100, help = '计数标准化总值')
+    parser.add_argument('-n', '--stdnum', type = int, required=False, default= 100, help = '计数标准化总值')
 
     return parser.parse_args()
 
@@ -45,14 +45,14 @@ def main():
     data_dict = {i:data[i] for i in range(len(data))}
     new_df = pd.DataFrame.from_dict(data_dict,orient='index',columns=df.columns)
 
-#    new_df.to_csv(output,sep='\t',index=False)
     new_df = new_df.groupby[df.columns[-1]].sum()
+    new_df.to_csv(f'{output}.count',sep='\t')
 
     modi_df = pd.DataFrame()
     for column_name in new_df.columns:
         modi_df[column_name] = new_df[column_name]/new_df[column_name].sum()*stdnum
 
-    modi_df.to_csv(output,sep='\t')
+    modi_df.to_csv(f'{output}.tpm',sep='\t')
 
 
 if __name__ == '__main__':
